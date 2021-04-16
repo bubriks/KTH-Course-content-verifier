@@ -15,6 +15,6 @@ def main(location, changes):
                          "\nGroup 1: " + str(groups) +
                          "\nGroup 2: " + str(match.groups()))
         else:
-            sys.exit("String doesnt match the pattern" +
+            sys.exit("Change loaction doesnt match the pattern" +
                      "\nString: " + i)
     return (match.group(0), match.groups())
