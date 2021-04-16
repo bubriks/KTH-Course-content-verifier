@@ -21,7 +21,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-	- id: changed-files
+    - id: changed-files
       name: Get changed files
       uses: jitterbit/get-changed-files@v1
 
@@ -29,7 +29,7 @@ jobs:
       uses: bubriks/KTH-Course-content-verifier@master
       with:
         location: ^contributions/(.+)/(.+)/
-		changes: ${{ steps.changed-files.outputs.all }}
+        changes: ${{ steps.changed-files.outputs.all }}
         structure: >
           {
             "title": [
