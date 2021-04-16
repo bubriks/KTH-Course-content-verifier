@@ -1,13 +1,16 @@
-name: "Python Container Action Template"
-description: "Get started with Python Container actions"
-author: "Jacob Tomlinson"
+name: "KTH DevOps course content verificator"
+description: "Verifies that contents are changed in correct location and that markdown file contains the necassary info structure"
+author: "Ralfs Zangis"
 inputs:
-  myInput:
-    description: "Input to use"
-    default: "world"
-outputs:
-  myOutput:
-    description: "Output from the action"
+  location:
+    description: "Regex path showcasing expected file location"
+    required: true
+  changes:
+    description: "Space separated location of changes"
+    required: true
+  structure:
+    description: "Expected file content structure"
+    required: true
 runs:
   using: "docker"
   image: "Dockerfile"

@@ -1,20 +1,24 @@
-# Python Container Action Template
+# File content checker
 
-[![Action Template](https://img.shields.io/badge/Action%20Template-Python%20Container%20Action-blue.svg?colorA=24292e&colorB=0366d6&style=flat&longCache=true&logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAOCAYAAAAfSC3RAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAM6wAADOsB5dZE0gAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAERSURBVCiRhZG/SsMxFEZPfsVJ61jbxaF0cRQRcRJ9hlYn30IHN/+9iquDCOIsblIrOjqKgy5aKoJQj4O3EEtbPwhJbr6Te28CmdSKeqzeqr0YbfVIrTBKakvtOl5dtTkK+v4HfA9PEyBFCY9AGVgCBLaBp1jPAyfAJ/AAdIEG0dNAiyP7+K1qIfMdonZic6+WJoBJvQlvuwDqcXadUuqPA1NKAlexbRTAIMvMOCjTbMwl1LtI/6KWJ5Q6rT6Ht1MA58AX8Apcqqt5r2qhrgAXQC3CZ6i1+KMd9TRu3MvA3aH/fFPnBodb6oe6HM8+lYHrGdRXW8M9bMZtPXUji69lmf5Cmamq7quNLFZXD9Rq7v0Bpc1o/tp0fisAAAAASUVORK5CYII=)](https://github.com/jacobtomlinson/python-container-action)
-[![Actions Status](https://github.com/jacobtomlinson/python-container-action/workflows/Lint/badge.svg)](https://github.com/jacobtomlinson/python-container-action/actions)
-[![Actions Status](https://github.com/jacobtomlinson/python-container-action/workflows/Integration%20Test/badge.svg)](https://github.com/jacobtomlinson/python-container-action/actions)
-
-This is a template for creating GitHub actions and contains a small Python application which will be built into a minimal [Container Action](https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-a-docker-container-action). Our final container from this template is ~50MB, yours may be a little bigger once you add some code. If you want something smaller check out my [go-container-action template](https://github.com/jacobtomlinson/go-container-action/actions).
-
-In `main.py` you will find a small example of accessing Action inputs and returning Action outputs. For more information on communicating with the workflow see the [development tools for GitHub Actions](https://help.github.com/en/actions/automating-your-workflow-with-github-actions/development-tools-for-github-actions).
-
-> 🏁 To get started, click the `Use this template` button on this repository [which will create a new repository based on this template](https://github.blog/2019-06-06-generate-new-repositories-with-repository-templates/).
+This action is intended for use only by the KTH DevOps course repository. It checks if changes have taken place in correct location and that markdown file structure is currect. In case of any violation it is expected to fail the build. 
 
 ## Usage
 
-Describe how to use your action here.
+The verification of the markdown file contents is done using JSON schema, with possible usage of three value types: dictionary, list, and string.
 
-### Example workflow
+- Dictionary- All contents within the dictionary must be satisfied.
+- List- At least one of the list elements must match (takes the first match).
+- String- Regex value used for line content verification.
+
+## Advice
+
+Functionality of the following actions is incorporated in repository:
+- https://github.com/bubriks/string-verifier
+- https://github.com/bubriks/file-content-checker
+
+when possible it is advisible to use them instead of this action.
+
+### Example usage for the Devops course
 
 ```yaml
 name: My Workflow
@@ -23,63 +27,70 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@master
-    - name: Run action
+    - uses: actions/checkout@v2
 
-      # Put your action repo here
-      uses: me/myaction@master
+	- id: changed-files
+      name: Get changed files
+      uses: jitterbit/get-changed-files@v1
 
-      # Put an example of your mandatory inputs here
+    - name: Verify submission details
+      uses: bubriks/KTH-Course-content-verifier@master
       with:
-        myInput: world
+        location: ^contributions/(.+)/(.+)/
+		changes: ${{ steps.changed-files.outputs.all }}
+        structure: >
+          {
+            "title": [
+              "^# presentation:.*$",
+              "^# essay:.*$",
+              "^# demo:.*$",
+              "^# open-source:.*$",
+              "^# executable tutorial:.*$",
+              "^# course automation:.*$",
+              "^# feedback:.*$"
+            ],
+            "member": {
+              "title": "^## members$",
+              "memberOne": [
+                {
+                  "nameAndEmail": "^[a-z]+( [a-z]+)* [a-z]+ \([a-z]+@kth.se\)$",
+                  "gitHub": "^github: https://github.com/[a-z]+$"
+                },
+                {
+                  "nameAndEmail": "^[a-z]+( [a-z]+)* [a-z]+ \([a-z]+@kth.se\)$"
+                }
+              ],
+              "memberTwo": [
+                {
+                  "nameAndEmail": "^[a-z]+( [a-z]+)* [a-z]+ \([a-z]+@kth.se\)$",
+                  "gitHub": "^github: https://github.com/[a-z]+$"
+                },
+                {
+                  "nameAndEmail": "^[a-z]+( [a-z]+)* [a-z]+ \([a-z]+@kth.se\)$"
+                },
+                {}
+              ],
+              "memberThree": [
+                {
+                  "nameAndEmail": "^[a-z]+( [a-z]+)* [a-z]+ \([a-z]+@kth.se\)$",
+                  "gitHub": "^github: https://github.com/[a-z]+$"
+                },
+                {
+                  "nameAndEmail": "^[a-z]+( [a-z]+)* [a-z]+ \([a-z]+@kth.se\)$"
+                },
+                {}
+              ]
+            },
+            "proposal": "^## proposal$"
+          }
 ```
 
 ### Inputs
 
 | Input                                             | Description                                        |
 |------------------------------------------------------|-----------------------------------------------|
-| `myInput`  | An example mandatory input    |
-| `anotherInput` _(optional)_  | An example optional input    |
-
-### Outputs
-
-| Output                                             | Description                                        |
-|------------------------------------------------------|-----------------------------------------------|
-| `myOutput`  | An example output (returns 'Hello world')    |
-
-## Examples
-
-> NOTE: People ❤️ cut and paste examples. Be generous with them!
-
-### Using the optional input
-
-This is how to use the optional input.
-
-```yaml
-with:
-  myInput: world
-  anotherInput: optional
-```
-
-### Using outputs
-
-Show people how to use your outputs in another action.
-
-```yaml
-steps:
-- uses: actions/checkout@master
-- name: Run action
-  id: myaction
-
-  # Put your action name here
-  uses: me/myaction@master
-
-  # Put an example of your mandatory arguments here
-  with:
-    myInput: world
-
-# Put an example of using your outputs here
-- name: Check outputs
-    run: |
-    echo "Outputs - ${{ steps.myaction.outputs.myOutput }}"
-```
+| `path`  | Path to the file to be verified.    |
+| `structure` | Expected file content structure (JSON string).    |
+| `strip` _(optional)_  | Remove spaces at the beginning and the end of the line read from the file path.    |
+| `empty` _(optional)_  | Use empty lines for comparison.    |
+| `lower` _(optional)_  | Text from file to lowercase.    |
